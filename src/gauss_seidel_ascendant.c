@@ -73,7 +73,7 @@ void liberation_matrice(struct matrice matrice) {
 }
 
 // Lecture des données d'un fichier et création de la matrice
-struct matrice lecture(char const *nom_fichier, int stanford) {
+struct matrice lecture(char const *nom_fichier) {
     struct matrice matrice;
     int degre = 0;
     int dest = 0;
@@ -81,7 +81,7 @@ struct matrice lecture(char const *nom_fichier, int stanford) {
 
     FILE *fichier = fopen(nom_fichier, "r");
     if(fichier == NULL) {
-        printf("Erreur : Le fichier renseigné est introuvable\n");
+        printf("Erreur : Le fichier renseigne est introuvable\n");
         exit(0);
     }
     printf("\nLecture du fichier...\n");
@@ -96,16 +96,12 @@ struct matrice lecture(char const *nom_fichier, int stanford) {
 
     for(int i = 0; i < matrice.nbr_lignes; i++) {
         fscanf(fichier, "%d %d ", &matrice.ligne[i].num, &degre);
-        if(stanford) matrice.ligne[i].num--;
+        matrice.ligne[i].num--;
 
         for(int j = 0; j < degre; j++) {
-            if(stanford) {
-                fscanf(fichier, "%d %lf ", &dest, &proba);
-                matrice.ligne[dest-1].elem = nouvel_element(matrice.ligne[dest-1].elem, i, proba);
-            } else {
-                fscanf(fichier, "%lf %d ", &proba, &dest);
-                matrice.ligne[dest].elem = nouvel_element(matrice.ligne[dest].elem, i, proba);
-            }
+            fscanf(fichier, "%d %lf ", &dest, &proba);
+            matrice.ligne[dest-1].elem = nouvel_element(matrice.ligne[dest-1].elem, i, proba);
+           
         }
         printf("\r");
         printf("%d %%", i * 100 / matrice.nbr_lignes + 1);
@@ -120,7 +116,7 @@ struct matrice lecture(char const *nom_fichier, int stanford) {
 void ecriture_resultat(double *pin, int taille) {
     FILE *fichier = fopen(fichier_resultat, "w+");
     if(fichier == NULL) {
-        printf("Erreur : Il est impossible d'écrire dans le fichier %s\n", fichier_resultat);
+        printf("Erreur : Il est impossible decrire dans le fichier %s\n", fichier_resultat);
     } else {
         fprintf(fichier, "(%lf", pin[0]);
         for(int i = 1; i < taille; i++) {
@@ -150,13 +146,13 @@ double *pagerank_gauss_seidel_ascendant(struct matrice matrice) {
     for (int i = 0; i < matrice.nbr_lignes; ++i)
         pio[i] = 1.0 / matrice.nbr_lignes;
 
-    printf("Calcul du pagerank :\n\n");
+    printf("Calcul du Gauss seidel :\n\n");
     while(eps < abs) {
         nbr_iteration_convergence++;
         abs = 0.0;
         somme_renormalisation = 0;
 
-        for (int i = 0; i < matrice.nbr_lignes; ++i) {
+        for (int i = 0; i < matrice.nbr_lignes; i++) {
             pin[i] = 0.0;
             elem_parcours = matrice.ligne[i].elem;
             while(elem_parcours != NULL) {
@@ -177,7 +173,7 @@ double *pagerank_gauss_seidel_ascendant(struct matrice matrice) {
             abs += tmp;
             pio[i] = pin[i];
         }
-        printf("Difference entre 2 itérations : %lf\n", abs);
+        printf("Difference entre 2 iterations : %lf\n", abs);
     }
 
     quantite_memoire_liberee += sizeof(double) * matrice.nbr_lignes;
@@ -188,24 +184,17 @@ double *pagerank_gauss_seidel_ascendant(struct matrice matrice) {
 
 // Programme principal
 int main(int argc, char const *argv[]) {
-    int stanford = 0;
     clock_t debut_lecture_t, fin_lecture_t, debut_calcul_t, fin_calcul_t;
     struct matrice matrice;
-
-    if(argc == 3) {
-        if(!strcmp(argv[2], "--stanford"))
-            stanford = 1;
-        else {
-            printf("Erreur : L'argument donné n'est pas reconnu.\n");
-            exit(0);
-        }
-    } else if(argc != 2) {
-        printf("Erreur : Le nombre d'arguments donnés est incorrect.\n");
+    
+    
+    if(argc != 2) {
+        printf("Erreur : Le nombre d arguments donnes est incorrect.\n");
         exit(0);
     }
 
     debut_lecture_t = clock();
-    matrice = lecture(argv[1], stanford);
+    matrice = lecture(argv[1]);
     fin_lecture_t = clock();
 
     debut_calcul_t = clock();
@@ -219,15 +208,15 @@ int main(int argc, char const *argv[]) {
     liberation_matrice(matrice);
 
     printf("\n*******************************************\n");
-    printf("\nNombre d'itérations pour la convergence : %d\n", nbr_iteration_convergence);
+    printf("\nNombre d iterations pour la convergence : %d\n", nbr_iteration_convergence);
     printf("\nTemps de lecture du fichier en CPU ticks : %lu\n", fin_lecture_t - debut_lecture_t);
     printf("Temps de lecture du fichier en ms : %lf\n", (double)(fin_lecture_t - debut_lecture_t) * 1000 / CLOCKS_PER_SEC);
     printf("Temps de calcul du pagerank en CPU ticks : %lu\n", fin_calcul_t - debut_calcul_t);
     printf("Temps de calcul du pagerank en ms : %lf\n", (double)(fin_calcul_t - debut_calcul_t) * 1000 / CLOCKS_PER_SEC);
     printf("\nTemps total de calcul du pagerank en CPU ticks : %lu\n", fin_calcul_t - debut_lecture_t);
     printf("Temps total de calcul du pagerank en ms : %lf\n", (double)(fin_calcul_t - debut_lecture_t) * 1000 / CLOCKS_PER_SEC);
-    printf("\nQuantité de mémoire allouée dynamiquement en octets : %d\n", quantite_memoire_allouee);
-    printf("Quantité de mémoire libérée dynamiquement en octets : %d\n", quantite_memoire_liberee);
+    printf("\nQuantite de memoire allouee dynamiquement en octets : %d\n", quantite_memoire_allouee);
+    printf("Quantite de memoire libérée dynamiquement en octets : %d\n", quantite_memoire_liberee);
 
     return 0;
 }

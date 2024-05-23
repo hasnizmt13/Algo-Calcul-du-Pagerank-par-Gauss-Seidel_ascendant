@@ -61,13 +61,13 @@ void liberation_matrice(struct matrice matrice) {
 FONCTIONS DE LECTURE ET D'ECRITURE
 *****************************************/
 
-struct matrice lecture(const char *nom_fichier, int stanford) {
+struct matrice lecture(const char *nom_fichier) {
 	struct matrice matrice;
 
 	// Ouverture du fichier
 	FILE *fichier = fopen(nom_fichier, "r");
 	if(fichier == NULL) {
-		printf("Erreur : Impossible de trouver le fichier spécifié\n");
+		printf("Erreur : Impossible de trouver le fichier specifie\n");
 		exit(0);
 	}
 
@@ -84,7 +84,7 @@ struct matrice lecture(const char *nom_fichier, int stanford) {
 	for(int i=0; i<matrice.nbr_lignes; i++) {
 		// Lecture des informations de base de chaque ligne
 		fscanf(fichier, "%d %d ", &matrice.ligne[i].num, &matrice.ligne[i].degre);
-		if(stanford) matrice.ligne[i].num--;
+		matrice.ligne[i].num--;
 
 		// Allocation mémoire pour les éléments de chaque ligne
 		matrice.ligne[i].elem = malloc(sizeof(ELEMENT)*matrice.ligne[i].degre);
@@ -92,12 +92,9 @@ struct matrice lecture(const char *nom_fichier, int stanford) {
 
 		// Lecture des éléments de la ligne
 		for (int j=0; j<matrice.ligne[i].degre; j++) {
-			if(stanford) {
 				fscanf(fichier, "%d %lf ", &matrice.ligne[i].elem[j].dest, &matrice.ligne[i].elem[j].proba);
 				matrice.ligne[i].elem[j].dest--;
-			} else {
-				fscanf(fichier, "%lf %d ", &matrice.ligne[i].elem[j].proba, &matrice.ligne[i].elem[j].dest);
-			}
+		
 		}
 		printf("\r%d %%", i*100/matrice.nbr_lignes+1);
 	}
@@ -110,7 +107,7 @@ struct matrice lecture(const char *nom_fichier, int stanford) {
 void ecriture_resultat(LIGNE pin) {
 	FILE *fichier = fopen(fichier_resultat, "w+");
 	if(fichier == NULL) {
-		printf("Erreur : Impossible d'écrire dans le fichier %s\n", fichier_resultat);
+		printf("Erreur : Impossible d ecrire dans le fichier %s\n", fichier_resultat);
 	} else {
 		fprintf(fichier, "(%lf", pin.elem[0].proba);
 		for(int i = 1; i < pin.degre; i++) {
@@ -176,7 +173,7 @@ LIGNE pagerank(struct matrice matrice) {
 			abs += tmp;
 			pio.elem[i].proba = pin.elem[i].proba;
 		}
-		printf("Difference entre 2 itérations : %lf\n", abs);
+		printf("Difference entre 2 iterations : %lf\n", abs);
 	}
 
 	// Libération mémoire de pio
@@ -190,29 +187,20 @@ LIGNE pagerank(struct matrice matrice) {
 PROGRAMME PRINCIPAL
 ******************/
 int main(int argc, char const *argv[]) {
-	// Détermine si la matrice est au format Stanford
-	int stanford = 0;
 	// Variables pour mesurer le temps de calcul et de lecture
 	clock_t debut_lecture_t, fin_lecture_t, debut_calcul_t, fin_calcul_t;
 	// Structure pour stocker la matrice
 	struct matrice matrice;
 
 	// Vérification des arguments d'entrée
-	if(argc == 3) {
-		if(!strcmp(argv[2], "--stanford"))
-			stanford = 1;
-		else {
-			printf("Erreur : Argument non reconnu.\n");
-			exit(0);
-		}
-	} else if(argc != 2) {
-		printf("Erreur : Nombre incorrect d'arguments.\n");
+	if(argc != 2) {
+		printf("Erreur : Nombre incorrect d arguments.\n");
 		exit(0);
 	}
 
 	// Lecture du fichier
 	debut_lecture_t = clock();
-	matrice = lecture(argv[1], stanford);
+	matrice = lecture(argv[1]);
 	fin_lecture_t = clock();
 
 	// Calcul du PageRank
@@ -230,15 +218,15 @@ int main(int argc, char const *argv[]) {
 
 	// Affichage des statistiques
 	printf("\n*******************************************\n");
-	printf("\nNombre d'itérations pour la convergence : %d\n", nbr_iterations_convergence);
+	printf("\nNombre d'iterations pour la convergence : %d\n", nbr_iterations_convergence);
 	printf("\nTemps de lecture du fichier en CPU ticks : %lu\n", fin_lecture_t - debut_lecture_t);
 	printf("Temps de lecture du fichier en ms : %lf\n", (double)(fin_lecture_t - debut_lecture_t)*1000/CLOCKS_PER_SEC);
 	printf("Temps de calcul du PageRank en CPU ticks : %lu\n", fin_calcul_t - debut_calcul_t);
 	printf("Temps de calcul du PageRank en ms : %lf\n", (double)(fin_calcul_t - debut_calcul_t)*1000/CLOCKS_PER_SEC);
 	printf("\nTemps total de calcul du PageRank en CPU ticks : %lu\n", fin_calcul_t - debut_lecture_t);
 	printf("Temps total de calcul du PageRank en ms : %lf\n", (double)(fin_calcul_t - debut_lecture_t)*1000/CLOCKS_PER_SEC);
-	printf("\nQuantité de mémoire allouée dynamiquement en octets : %d\n", quantite_memoire_allouee);
-	printf("Quantité de mémoire libérée dynamiquement en octets : %d\n", quantite_memoire_liberee);
+	printf("\nQuantite de memoire allouee dynamiquement en octets : %d\n", quantite_memoire_allouee);
+	printf("Quantite de memoire liberee dynamiquement en octets : %d\n", quantite_memoire_liberee);
 
 	return 0;
 }
